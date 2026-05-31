@@ -1,26 +1,34 @@
-# ren-skills — Claude plugin marketplace
+# ren-skills
 
-A small marketplace of Claude skills, installable in Claude Code and Cowork.
-
-## Plugins
-
-### aws-permission-evaluator
-Explains whether an AWS action on a resource is **allowed or denied, and why** — from a prose
-description, no AWS credentials needed. Works for any service with a resource-based policy
-(S3, DynamoDB, Lambda, SQS, SNS, Secrets Manager, KMS, ECR, API Gateway, EventBridge, …) and
-reasons through IAM identity policies, permission boundaries, resource policies, SCPs, RCPs,
-and KMS key policies. Returns a structured verdict, the deciding rule, and a fix — built to
-catch the corners engineers get wrong (implicit vs. explicit deny, cross-account needing both
-sides, `aws/s3` cross-account being impossible, CMK key enumeration, the SCP `FullAWSAccess`
-subtlety).
+A collection of agent-agnostic skills — self-contained Markdown directories that any agent
+which reads a skills folder (e.g. via `~/.agents/skills` or `~/.cursor/skills`) can use.
 
 ## Install
+
+One command, from a clone:
+```bash
+git clone https://github.com/<you>/ren-skills.git && cd ren-skills && ./install.sh
 ```
-/plugin marketplace add <your-github-username>/ren-skills
-/plugin install aws-permission-evaluator@ren-skills
+
+Or remotely:
+```bash
+curl -fsSL https://raw.githubusercontent.com/<you>/ren-skills/main/install.sh | bash
 ```
-Run as slash commands in a Claude Code / Cowork session. A local path also works:
-`/plugin marketplace add /Users/nicholasren/projects/ren-skills`.
+
+By default the installer picks `~/.cursor/skills` if `~/.cursor` exists, otherwise
+`~/.agents/skills`. Override with `SKILLS_DIR`:
+```bash
+SKILLS_DIR=~/.agents/skills ./install.sh
+```
+Install a single skill by name: `./install.sh aws-permission-evaluator`.
+
+## Skills
+
+- **aws-permission-evaluator** — explains whether an AWS action on a resource is allowed or
+  denied, and why, for any service with a resource-based policy (S3, DynamoDB, Lambda, SQS,
+  SNS, Secrets Manager, KMS, ECR, API Gateway, EventBridge, …). Reasons through IAM, permission
+  boundaries, resource policies, SCPs, RCPs, and KMS key policies.
 
 ## License
+
 MIT — see [LICENSE](./LICENSE).

@@ -1,8 +1,8 @@
 # aws-permission-evaluator
 
-A skill that explains whether an AWS action on a resource is **allowed or denied, and why** —
-from a prose description of the scenario. No AWS credentials required; it reasons about the
-policies you describe or paste in.
+An agent skill that explains whether an AWS action on a resource is **allowed or denied, and
+why** — from a prose description of the scenario. No AWS credentials required; it reasons about
+the policies you describe or paste in.
 
 Works for any AWS resource that supports a resource-based policy: S3, DynamoDB, Lambda, SQS,
 SNS, Secrets Manager, KMS, ECR, API Gateway, EventBridge, and more.
@@ -35,15 +35,6 @@ be allowed to do Z", or "explain this AccessDenied".
 
 ## Install
 
-Personal (available in every local session):
-
-```bash
-mkdir -p ~/.claude/skills
-cp -R aws-permission-evaluator ~/.claude/skills/
-# or symlink so edits propagate:
-# ln -s "$(pwd)/aws-permission-evaluator" ~/.claude/skills/aws-permission-evaluator
-```
-
-Project-scoped: place the folder under `<project>/.claude/skills/`.
-
-Or install via the bundled plugin — see the plugin package.
+This skill is a self-contained directory of Markdown — no runtime, no dependencies. Install it
+into your agent's skills directory (`~/.agents/skills` or `~/.cursor/skills`) with the
+repository's `install.sh`, or just copy the folder there manually.
