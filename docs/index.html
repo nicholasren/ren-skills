@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can I? — AWS Permission Evaluator</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2d3645;
+    --text:#e6edf3; --muted:#8b949e; --accent:#4493f8;
+    --pass:#3fb950; --fail:#f85149; --na:#6e7681; --warn:#d29922;
+    --chip:#21262d; --chipOn:#1f6feb; --scp:#a371f7; --rcp:#2da884; --enc:#db61a2;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{--bg:#f6f8fa;--panel:#fff;--panel2:#f0f3f6;--border:#d0d7de;--text:#1f2328;--muted:#636c76;--chip:#eaeef2;}
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 60px;}
+  header h1{font-size:23px;margin:0 0 4px;}
+  header p{color:var(--muted);margin:0 0 20px;max-width:760px;font-size:14px;}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .presets button{font-size:12px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;}
+  .presets button:hover{color:var(--text);border-color:var(--accent);}
+  .top{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start;}
+  @media(max-width:860px){.top{grid-template-columns:1fr;}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
+  .field{margin:0 0 14px;} .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .seg{display:flex;flex-wrap:wrap;gap:5px;}
+  .seg button{font-family:var(--sans);font-size:12.5px;border:1px solid var(--border);background:var(--chip);color:var(--text);padding:5px 10px;border-radius:7px;cursor:pointer;transition:.12s;}
+  .seg button:hover{border-color:var(--accent);}
+  .seg button[aria-pressed="true"]{background:var(--chipOn);border-color:var(--chipOn);color:#fff;}
+  .hint{font-size:11px;color:var(--muted);margin-top:5px;}
+  .vrow{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .badge{font-weight:700;font-size:15px;padding:6px 14px;border-radius:999px;}
+  .badge.ok{background:rgba(63,185,80,.15);color:var(--pass);border:1px solid var(--pass);}
+  .badge.no{background:rgba(248,81,73,.13);color:var(--fail);border:1px solid var(--fail);}
+  .run{margin-left:auto;font-family:var(--sans);font-size:13px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 16px;border-radius:8px;cursor:pointer;}
+  .run:hover{filter:brightness(1.08);}
+  .run:disabled{opacity:.5;cursor:default;}
+  svg.diagram{width:100%;height:auto;display:block;background:transparent;border-radius:10px;}
+  table.gates{width:100%;border-collapse:collapse;font-size:13px;margin-top:14px;}
+  table.gates td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top;}
+  table.gates tr:last-child td{border-bottom:none;}
+  td.g-name{white-space:nowrap;} td.g-status{font-family:var(--mono);font-weight:700;white-space:nowrap;}
+  td.g-note{color:var(--muted);font-size:12px;}
+  tr.deciding{background:rgba(68,147,248,.12);}
+  tr.deciding td.g-name::before{content:"▶ ";color:var(--accent);}
+  .s-pass{color:var(--pass);}.s-fail{color:var(--fail);}.s-na{color:var(--na);}.s-impl{color:var(--warn);}
+  .rule{margin-top:14px;padding:12px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;}
+  .rule .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-bottom:3px;}
+  .rule .v{font-size:13.5px;margin-bottom:10px;}.rule .v:last-child{margin-bottom:0;}
+  footer{margin-top:24px;color:var(--muted);font-size:12px;}footer a{color:var(--accent);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Can I? <span style="color:var(--muted);font-weight:400;">— AWS permission evaluator</span></h1>
+    <p>Toggle the scenario; the diagram and verdict update live. Press <strong>Run request</strong> to send a
+       request through the gates and watch where it stops. Nested boxes are policy scopes — SCP/RCP wrap the
+       account, the boundary and identity/resource policies wrap the principal and resource.</p>
+  </header>
+
+  <div class="presets" id="presets"></div>
+
+  <div class="top">
+    <div class="card" id="controls"></div>
+    <div class="card">
+      <div class="vrow">
+        <span id="badge" class="badge">—</span>
+        <span id="vsub" class="hint"></span>
+        <button class="run" id="runBtn">▶ Run request</button>
+      </div>
+      <svg class="diagram" id="diagram" viewBox="0 0 784 320" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="rule">
+        <div class="k">Deciding rule</div><div class="v" id="rule"></div>
+        <div class="k">Fix</div><div class="v" id="fix"></div>
+      </div>
+    </div>
+  </div>
+
+  <table class="gates"><tbody id="gates"></tbody></table>
+
+  <footer>
+    Heuristic teaching tool modelling the standard evaluation order (explicit deny → SCP → RCP →
+    same/cross-account → permission boundary → KMS). Confirm against the AWS IAM policy evaluation
+    reference for production decisions. Part of the <a href="../">aws-permission-evaluator</a> skill.
+  </footer>
+</div>
+
+<script>
+const RES_LABEL={s3:"Bucket policy",dynamodb:"Table resource policy",lambda:"Function policy",sqs:"Queue policy",sns:"Topic policy",secretsmanager:"Secret policy",ecr:"Repository policy",other:"Resource policy"};
+const ACTION={s3:"s3:GetObject",dynamodb:"dynamodb:DeleteTable",lambda:"lambda:InvokeFunction",sqs:"sqs:SendMessage",sns:"sns:Publish",secretsmanager:"secretsmanager:GetSecretValue",ecr:"ecr:GetDownloadUrlForLayer",other:"service:Action"};
+
+const state={service:"s3",topology:"same",enc:"sse-s3",cmk:false,iam:"allow",boundary:"none",resource:"silent",scp:"allow",rcp:"na",kms:"enumerate"};
+const kmsApplies=s=>(s.service==="s3"&&s.enc==="cmk")||(s.service==="secretsmanager"&&s.cmk);
+
+/* ---------- decision logic (returns verdict, deciding gate, stop key) ---------- */
+function decide(s){
+  const cross=s.topology==="cross", kms=kmsApplies(s), rcpOn=s.rcp!=="na";
+  const ed=[];
+  if(s.iam==="deny")ed.push(["iam","IAM identity policy"]);
+  if(s.boundary==="deny")ed.push(["boundary","permission boundary"]);
+  if(s.resource==="deny")ed.push(["resource",RES_LABEL[s.service].toLowerCase()]);
+  if(s.scp==="deny")ed.push(["scp","SCP"]);
+  if(rcpOn&&s.rcp==="deny")ed.push(["rcp","RCP"]);
+  if(kms&&s.kms==="deny")ed.push(["kms","KMS key policy"]);
+
+  let verdict,stop,rule,fix="";
+  if(ed.length){
+    verdict="Denied"; stop=ed[0][0];
+    rule=`Explicit Deny in the ${ed.map(e=>e[1]).join(", ")} — an explicit Deny overrides every Allow, everywhere.`;
+    fix=`Remove the explicit Deny in the ${ed[0][1]}.`;
+  } else if(s.scp==="restrictive"){
+    verdict="Denied"; stop="scp";
+    rule="The caller's SCP doesn't allow the action (FullAWSAccess removed, action not in the allow-list). An SCP block can't be bypassed by a resource-policy grant.";
+    fix="Add the action to the SCP allow-list, or restore FullAWSAccess.";
+  } else if(rcpOn&&s.rcp==="restrictive"){
+    verdict="Denied"; stop="rcp";
+    rule="The resource owner's RCP doesn't allow the action. RCP gates every caller and can't be bypassed by a resource-policy grant.";
+    fix="Add the action to the RCP allow-list on the resource's org/OU/account.";
+  } else if(s.service==="s3"&&s.enc==="aws-s3"&&cross){
+    verdict="Denied"; stop="kms";
+    rule="SSE-KMS with the AWS-managed aws/s3 key can't grant cross-account access — you can't add an external principal to a managed key.";
+    fix="Re-encrypt with a customer-managed CMK, then grant the principal in both the bucket policy and the key policy.";
+  } else if(kms&&s.kms!=="enumerate"){
+    verdict="Denied"; stop="kms";
+    rule="KMS is deny-by-default; the CMK key policy doesn't enumerate the principal. IAM alone never unlocks a CMK.";
+    fix="Add the principal to the CMK key policy (kms:Decrypt, plus Encrypt/GenerateDataKey if writing).";
+  } else if(!cross){
+    if(s.resource==="allow"){verdict="Allowed";stop="allowed";rule="Same-account resource-policy grant is sufficient on its own — and it overrules an implicit deny in the permission boundary.";}
+    else if(s.iam==="allow"&&s.boundary!=="silent"){verdict="Allowed";stop="allowed";rule="Same-account: an IAM Allow on the role is enough, and it sits within the permission boundary.";}
+    else if(s.iam==="allow"&&s.boundary==="silent"){verdict="Denied";stop="boundary";rule="IAM allows it, but the permission boundary doesn't include the action (implicit deny) and no resource-policy grant is present to bypass it.";fix="Add the action to the boundary, or add a resource-policy grant.";}
+    else {verdict="Denied";stop="iam";rule="Nothing grants the action: neither the IAM identity policy nor the resource policy allows it.";fix="Add an IAM Allow on the role, or a resource-policy grant.";}
+  } else {
+    if(s.iam!=="allow"){verdict="Denied";stop="iam";rule="Cross-account requires an IAM Allow on the calling principal in its own account — it isn't present.";fix="Add an IAM Allow on the role in the caller account.";}
+    else if(s.resource!=="allow"){verdict="Denied";stop="resource";rule="Cross-account requires the resource policy to grant the principal — both sides must say yes. It doesn't.";fix=`Add a statement to the ${RES_LABEL[s.service].toLowerCase()} naming the principal.`;}
+    else if(s.boundary==="silent"){verdict="Denied";stop="boundary";rule="Cross-account does NOT get the resource-policy-bypasses-boundary shortcut; the boundary's implicit deny caps the role independently.";fix="Add the action to the permission boundary in the caller account.";}
+    else {verdict="Allowed";stop="allowed";rule="Cross-account: an IAM Allow on the caller AND a resource-policy grant — both sides say yes"+(kms?", and the key policy enumerates the principal.":".");}
+  }
+  return {verdict,stop,rule,fix,cross,kms,rcpOn};
+}
+
+/* ---------- per-box status ---------- */
+function statuses(s,d){
+  const cross=d.cross,kms=d.kms,rcpOn=d.rcpOn;
+  const scp = s.scp==="allow"?"pass":"fail";
+  const rcp = !rcpOn?"na":s.rcp==="allow"?"pass":"fail";
+  let iam = s.iam==="allow"?"pass":s.iam==="deny"?"fail":((!cross&&s.resource==="allow")?"na":"impl");
+  let res = s.resource==="allow"?"pass":s.resource==="deny"?"fail":(cross?"fail":"na");
+  let bnd = s.boundary==="none"?"na":s.boundary==="allow"?"pass":s.boundary==="deny"?"fail":((!cross&&s.resource==="allow")?"impl":"impl");
+  let enc = !kms?"na":s.kms==="enumerate"?"pass":"fail";
+  if(s.service==="s3"&&s.enc==="aws-s3"&&cross)enc="fail";
+  return {scp,rcp,iam,res,bnd,enc};
+}
+const STROKE={pass:"#3fb950",fail:"#f85149",impl:"#d29922",na:"#8b949e",neutral:"#4493f8"};
+const DASH ={pass:"none",fail:"none",impl:"6 4",na:"3 4",neutral:"none"};
+
+/* ---------- diagram geometry ---------- */
+const TX_SAME=-176, TX_CROSS=0, Y=160;
+function stopX(stop,d){
+  const tx=d.cross?TX_CROSS:TX_SAME;
+  switch(stop){
+    case"iam":return 250; case"boundary":return 268; case"scp":return 304;
+    case"rcp":return 480+tx; case"kms":return 516+tx; case"resource":return 534+tx;
+    case"allowed":return 632+tx; default:return 632+tx;
+  }
+}
+function box(id,x,y,w,h,fill,label,lx,ly,lcol){
+  return `<rect id="${id}" x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${fill}" fill-opacity="0.07" stroke="${STROKE.neutral}" stroke-width="2"/>`+
+         (label?`<text x="${lx}" y="${ly}" font-size="10" font-weight="700" fill="${lcol}">${label}</text>`:"");
+}
+function drawDiagram(s,d){
+  const tx=d.cross?TX_CROSS:TX_SAME;
+  const acctB=d.cross?"ACCOUNT B":"ACCOUNT A";
+  const st=statuses(s,d);
+  const maxX=632+tx;
+  const svg=`
+  <!-- baseline -->
+  <line x1="160" y1="${Y}" x2="${maxX}" y2="${Y}" stroke="var(--border)" stroke-width="2" stroke-dasharray="2 5"/>
+  ${d.cross?`<text x="${(304+480)/2}" y="${Y-10}" font-size="9.5" fill="var(--muted)" text-anchor="middle" font-style="italic">account gap</text>`:`<text x="${(304+(304))/2+40}" y="${Y-92}" font-size="9.5" fill="var(--muted)" text-anchor="middle"></text>`}
+
+  <!-- principal: SCP > account > boundary > identity > role -->
+  <rect id="scpBox" x="16" y="30" width="288" height="260" rx="11" fill="${'#a371f7'}" fill-opacity="0.06"/>
+  <text x="28" y="48" font-size="10" font-weight="700" fill="#8957e5">SCP · org guardrail</text>
+  <rect id="acctA" x="34" y="54" width="252" height="212" rx="10" fill="#4493f8" fill-opacity="0.05"/>
+  <text x="46" y="71" font-size="10" font-weight="700" fill="#1f6feb">ACCOUNT A</text>
+  <rect id="boundaryBox" x="52" y="80" width="216" height="160" rx="9" fill="#d29922" fill-opacity="0.08"/>
+  <text x="62" y="96" font-size="9.5" font-weight="700" fill="#bf8700">PERMISSION BOUNDARY</text>
+  <rect id="identityBox" x="70" y="104" width="180" height="112" rx="8" fill="#1f6feb" fill-opacity="0.06"/>
+  <text x="80" y="120" font-size="9.5" font-weight="700" fill="#1f6feb">IDENTITY POLICY</text>
+  <circle id="roleNode" cx="160" cy="${Y}" r="26" fill="#1f6feb" fill-opacity="0.16" stroke="#1f6feb" stroke-width="1.6"/>
+  <text x="160" y="${Y+4}" font-size="11" font-weight="700" fill="#1f6feb" text-anchor="middle">role</text>
+
+  <!-- resource group (translated for same/cross) -->
+  <g id="resGroup" transform="translate(${tx},0)">
+    <rect id="rcpBox" x="480" y="30" width="288" height="260" rx="11" fill="#2da884" fill-opacity="0.07"/>
+    <text x="492" y="48" font-size="10" font-weight="700" fill="#1a7f64">RCP · org guardrail</text>
+    <rect id="acctB" x="498" y="54" width="252" height="212" rx="10" fill="#4493f8" fill-opacity="0.05"/>
+    <text id="acctBlabel" x="510" y="71" font-size="10" font-weight="700" fill="#1f6feb">${acctB}</text>
+    <rect id="encBox" x="516" y="80" width="216" height="160" rx="9" fill="#db61a2" fill-opacity="0.07"/>
+    <text x="526" y="96" font-size="9.5" font-weight="700" fill="#bf3989">ENCRYPTION / KMS</text>
+    <rect id="resPolBox" x="534" y="104" width="180" height="112" rx="8" fill="#238636" fill-opacity="0.06"/>
+    <text x="544" y="120" font-size="9.5" font-weight="700" fill="#1a7f37">${RES_LABEL[s.service].toUpperCase()}</text>
+    <rect id="resNode" x="603" y="${Y-26}" width="52" height="52" rx="8" fill="#238636" fill-opacity="0.16" stroke="#238636" stroke-width="1.6"/>
+    <text x="629" y="${Y+4}" font-size="10.5" font-weight="700" fill="#1a7f37" text-anchor="middle">res</text>
+  </g>
+
+  <!-- request dot + pulse (hidden until Run) -->
+  <circle id="pulse" cx="160" cy="${Y}" r="0" fill="none" stroke="#f85149" stroke-width="2.6" opacity="0"/>
+  <circle id="dot" cx="160" cy="${Y}" r="7" fill="#f0a020" stroke="#7a4d00" stroke-width="1" opacity="0"/>
+  `;
+  document.getElementById("diagram").innerHTML=svg;
+
+  // apply gate colors to box strokes
+  const set=(id,stt)=>{const e=document.getElementById(id);if(!e)return;e.setAttribute("stroke",STROKE[stt]);e.setAttribute("stroke-width","2");e.setAttribute("stroke-dasharray",DASH[stt]);if(stt==="na")e.setAttribute("opacity","0.55");};
+  set("scpBox",st.scp); set("rcpBox",st.rcp); set("boundaryBox",st.bnd);
+  set("identityBox",st.iam); set("resPolBox",st.res); set("encBox",st.enc);
+  // accounts neutral
+  ["acctA","acctB"].forEach(id=>{const e=document.getElementById(id);if(e){e.setAttribute("stroke",STROKE.neutral);e.setAttribute("stroke-width","2");e.setAttribute("stroke-dasharray","none");}});
+}
+
+/* ---------- gate table ---------- */
+function gateTable(s,d){
+  const {scp,rcp,iam,res,bnd,enc}=statuses(s,d);
+  const lab={pass:"pass",fail:"FAIL",impl:"implicit",na:"n/a"};
+  const cls={pass:"s-pass",fail:"s-fail",impl:"s-impl",na:"s-na"};
+  const cross=d.cross;
+  const anyDeny=(s.iam==="deny"||s.boundary==="deny"||s.resource==="deny"||s.scp==="deny"||(d.rcpOn&&s.rcp==="deny")||(d.kms&&s.kms==="deny"));
+  const rows=[
+    ["explicit","Explicit deny anywhere",anyDeny?"fail":"pass",anyDeny?"an explicit Deny is present":"none found"],
+    ["scp","Caller SCP allows",scp, s.scp==="allow"?"FullAWSAccess / allowed":s.scp==="deny"?"explicit Deny":"not in allow-list"],
+    ["rcp","Resource-acct RCP allows",rcp, !d.rcpOn?"no RCP in play":s.rcp==="allow"?"allowed":s.rcp==="deny"?"explicit Deny":"not in allow-list"],
+    ["iam","IAM identity allows",iam, s.iam==="allow"?"allows the action":s.iam==="deny"?"explicit Deny":(!cross&&s.resource==="allow")?"not required — resource grants":"silent → implicit deny"],
+    ["resource",RES_LABEL[s.service]+" allows",res, s.resource==="allow"?"grants the principal":s.resource==="deny"?"explicit Deny":cross?"required cross-account, but silent":"not required same-account"],
+    ["boundary","Permission boundary",bnd, s.boundary==="none"?"no boundary attached":s.boundary==="allow"?"includes the action":s.boundary==="deny"?"explicit Deny":(!cross&&s.resource==="allow")?"implicit, bypassed by resource grant":"action not in allow set"],
+    ["kms","KMS key policy enumerates",enc, !d.kms?"caller doesn't touch a CMK":(s.service==="s3"&&s.enc==="aws-s3"&&cross)?"aws/s3 can't go cross-account":s.kms==="enumerate"?"enumerates principal":s.kms==="deny"?"explicit Deny":"not enumerated (deny-by-default)"]
+  ];
+  const tb=document.getElementById("gates");tb.innerHTML="";
+  rows.forEach(([key,name,stt,note])=>{
+    const tr=document.createElement("tr");
+    if(key===d.stop)tr.className="deciding";
+    tr.innerHTML=`<td class="g-name">${name}</td><td class="g-status ${cls[stt]}">${lab[stt]}</td><td class="g-note">${note}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ---------- render ---------- */
+let lastD=null;
+function render(){
+  const d=decide(state); lastD=d;
+  const b=document.getElementById("badge");
+  b.className="badge "+(d.verdict==="Allowed"?"ok":"no"); b.textContent=d.verdict;
+  document.getElementById("vsub").textContent=d.verdict==="Allowed"?"the request goes through":"the request is blocked";
+  drawDiagram(state,d);
+  gateTable(state,d);
+  document.getElementById("rule").textContent=d.rule;
+  document.getElementById("fix").textContent=d.fix||"— nothing to fix; it works.";
+}
+
+/* ---------- animate on Run ---------- */
+let anim=null;
+function runRequest(){
+  if(!lastD)return;
+  const d=lastD;
+  if(typeof gtag==="function"){
+    gtag("event","run_request",{
+      verdict:d.verdict, service:state.service, topology:state.topology,
+      deciding_gate:d.stop
+    });
+  }
+  const dot=document.getElementById("dot"), pulse=document.getElementById("pulse");
+  const target=stopX(d.stop,d);
+  const start=160, dur=900*Math.max(.4,(target-start)/Math.max(1,(632-160)));
+  if(anim)cancelAnimationFrame(anim);
+  pulse.setAttribute("opacity","0"); pulse.setAttribute("r","0");
+  dot.setAttribute("opacity","1"); dot.setAttribute("cx",start);
+  const t0=performance.now();
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur);
+    const x=start+(target-start)*p;
+    dot.setAttribute("cx",x);
+    if(p<1){anim=requestAnimationFrame(step);}
+    else{
+      const ok=d.verdict==="Allowed";
+      pulse.setAttribute("cx",target);
+      pulse.setAttribute("stroke",ok?STROKE.pass:STROKE.fail);
+      pulse.setAttribute("opacity","1");
+      let r=8,dir=1,frames=0;
+      function pul(){
+        r+=dir*0.7; if(r>16)dir=-1; if(r<8)dir=1;
+        pulse.setAttribute("r",r); frames++;
+        if(frames<140)anim=requestAnimationFrame(pul); else pulse.setAttribute("opacity","0.85");
+      }
+      pul();
+    }
+  }
+  anim=requestAnimationFrame(step);
+}
+
+/* ---------- controls ---------- */
+const FIELDS=[
+  {key:"service",label:"Service",opts:[["s3","S3"],["dynamodb","DynamoDB"],["lambda","Lambda"],["sqs","SQS"],["sns","SNS"],["secretsmanager","Secrets Mgr"],["ecr","ECR"],["other","Other"]]},
+  {key:"topology",label:"Account topology",opts:[["same","Same account"],["cross","Cross-account"]],hint:"Same-account is generous (IAM alone can suffice). Cross-account needs both sides."},
+  {key:"enc",label:"S3 encryption",opts:[["sse-s3","SSE-S3"],["aws-s3","SSE-KMS aws/s3"],["cmk","SSE-KMS CMK"]],when:s=>s.service==="s3",hint:"aws/s3 can't go cross-account; a CMK adds a key-policy gate."},
+  {key:"cmk",label:"CMK-encrypted?",opts:[[false,"No"],[true,"Yes (CMK)"]],when:s=>s.service==="secretsmanager",hint:"A CMK adds a key-policy gate the caller must pass."},
+  {key:"iam",label:"IAM identity policy",opts:[["allow","Allow"],["silent","Silent"],["deny","Explicit Deny"]]},
+  {key:"boundary",label:"Permission boundary",opts:[["none","None"],["allow","Allows"],["silent","Silent (implicit)"],["deny","Explicit Deny"]],hint:"A resource grant bypasses a SILENT boundary (same-account only) — never an explicit Deny."},
+  {key:"resource",label:s=>RES_LABEL[s.service],opts:[["allow","Grants principal"],["silent","Silent"],["deny","Explicit Deny"]]},
+  {key:"scp",label:"Caller SCP",opts:[["allow","Allows (default)"],["restrictive","Not in allow-list"],["deny","Explicit Deny"]],hint:"With default FullAWSAccess only an explicit Deny restricts."},
+  {key:"rcp",label:"Resource-acct RCP",opts:[["na","n/a"],["allow","Allows"],["restrictive","Not in allow-list"],["deny","Explicit Deny"]]},
+  {key:"kms",label:"KMS key policy",opts:[["enumerate","Enumerates principal"],["silent","Silent"],["deny","Explicit Deny"]],when:s=>kmsApplies(s),hint:"KMS is deny-by-default; the principal must be named or condition-matched."},
+];
+function buildControls(){
+  const root=document.getElementById("controls");root.innerHTML="";
+  FIELDS.forEach(f=>{
+    if(f.when&&!f.when(state))return;
+    const wrap=document.createElement("div");wrap.className="field";
+    const lab=document.createElement("label");lab.textContent=(typeof f.label==="function")?f.label(state):f.label;wrap.appendChild(lab);
+    const seg=document.createElement("div");seg.className="seg";
+    f.opts.forEach(([val,txt])=>{
+      const b=document.createElement("button");b.textContent=txt;b.setAttribute("aria-pressed",String(state[f.key]===val));
+      b.onclick=()=>{state[f.key]=val;buildControls();render();};
+      seg.appendChild(b);
+    });
+    wrap.appendChild(seg);
+    if(f.hint){const h=document.createElement("div");h.className="hint";h.textContent=f.hint;wrap.appendChild(h);}
+    root.appendChild(wrap);
+  });
+}
+
+/* ---------- presets ---------- */
+const BASE={service:"s3",topology:"same",enc:"sse-s3",cmk:false,iam:"allow",boundary:"none",resource:"silent",scp:"allow",rcp:"na",kms:"enumerate"};
+const PRESETS=[
+  ["Same-acct, IAM allows",{boundary:"allow"}],
+  ["Boundary silent, bucket grants",{iam:"silent",boundary:"silent",resource:"allow"}],
+  ["…+ explicit boundary Deny",{iam:"silent",boundary:"deny",resource:"allow"}],
+  ["Cross-acct, only IAM",{service:"dynamodb",topology:"cross",iam:"allow",boundary:"none",resource:"silent"}],
+  ["Cross-acct S3 aws/s3",{topology:"cross",enc:"aws-s3",iam:"allow",resource:"allow"}],
+  ["Cross-acct CMK, key silent",{topology:"cross",enc:"cmk",iam:"allow",resource:"allow",kms:"silent"}],
+  ["SCP explicit-denies",{resource:"allow",scp:"deny"}],
+];
+function buildPresets(){
+  const root=document.getElementById("presets");
+  PRESETS.forEach(([name,patch])=>{
+    const b=document.createElement("button");b.textContent=name;
+    b.onclick=()=>{Object.assign(state,BASE,patch);buildControls();render();};
+    root.appendChild(b);
+  });
+}
+
+document.getElementById("runBtn").onclick=runRequest;
+buildPresets();buildControls();render();
+</script>
+</body>
+</html>
