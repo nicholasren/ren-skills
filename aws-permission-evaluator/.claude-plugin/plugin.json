@@ -1,0 +1,7 @@
+{
+  "name": "aws-permission-evaluator",
+  "version": "1.0.0",
+  "description": "Explain whether an AWS action on a resource is allowed or denied, and why — for any service with a resource-based policy (S3, DynamoDB, Lambda, SQS, SNS, Secrets Manager, KMS, ECR, API Gateway, EventBridge, and more). Reasons through IAM identity policies, permission boundaries, resource policies, SCPs, RCPs, and KMS key policies from a prose description.",
+  "author": { "name": "Ren" },
+  "keywords": ["aws","iam","permissions","authorization","access-denied","scp","rcp","kms","resource-policy"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "ren-skills",
+  "owner": {
+    "name": "Ren"
+  },
+  "plugins": [
+    {
+      "name": "aws-permission-evaluator",
+      "source": "./aws-permission-evaluator",
+      "description": "Explain whether an AWS action on a resource is allowed or denied, and why — for any service with a resource-based policy. Reasons through IAM, boundaries, resource policies, SCPs, RCPs, and KMS key policies."
+    }
+  ]
+}
