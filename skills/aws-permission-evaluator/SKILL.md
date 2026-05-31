@@ -43,9 +43,10 @@ per-service mapping.
 
    1. **Any explicit `Deny` anywhere?** (SCP, RCP, IAM, boundary, resource policy, KMS
       policy) → Denied. Explicit deny beats everything.
-   2. **Caller's SCP** allows the action? → if not, Denied. SCPs only constrain; never grant.
-   3. **Resource owner's RCP** allows the action (if RCP applies to that service)? → if not,
-      Denied.
+   2. **Caller's SCP** allows the action? → if it blocks, Denied. SCPs only constrain; never
+      grant. (Note the `FullAWSAccess` subtlety — see decision-rules.md.)
+   3. **Resource owner's RCP** allows the action (if RCP applies to that service)? → if it
+      blocks, Denied.
    4. **Same account or cross account?**
       - **Same account:** an IAM Allow on the role is enough for the resource itself; the
         resource policy need not name the principal. A resource-policy grant can also bypass
@@ -55,13 +56,13 @@ per-service mapping.
    5. **Permission boundary** (if attached) — the action must be within its allowed set
       (intersection with IAM), unless a resource-policy grant bypasses an implicit deny.
    6. **KMS (only when the caller touches a CMK directly — e.g. S3 with a CMK, Secrets
-      Manager with a CMK)** — the key policy must enumerate the principal
-      (by ARN, `aws:PrincipalArn`, `aws:PrincipalTag`, or `aws:PrincipalOrgPaths`). KMS is
+      Manager with a CMK)** — the key policy must enumerate the principal (by ARN,
+      `aws:PrincipalArn`, `aws:PrincipalTag`, or `aws:PrincipalOrgPaths`). KMS is
       deny-by-default; same-account gives nothing for free. See `reference/kms.md`.
 
 3. **Check the common culprits** in `reference/gotchas.md` — these are what engineers get
    wrong (implicit vs. explicit deny, `aws/s3` cross-account being impossible, cross-account
-   needing both sides, CMK enumeration).
+   needing both sides, CMK enumeration, the SCP `FullAWSAccess` subtlety).
 
 ## Output format
 

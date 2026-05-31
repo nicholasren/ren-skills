@@ -52,9 +52,8 @@ enumerated in the key policy.
 
 ### T9 — SCP blocks despite same-account resource grant
 **Prompt:** "Role `svc` (acct 8888) same-account bucket `logs` grants s3:DeleteObject in the
-bucket policy, but the account SCP doesn't include s3:DeleteObject."
-**Expect:** **Denied.** Deciding rule: SCP must affirmatively allow; not bypassable by a
-resource-policy grant.
+bucket policy, but the account has an explicit Deny SCP on s3:DeleteObject."
+**Expect:** **Denied.** Deciding rule: an SCP block is not bypassable by a resource-policy grant.
 
 ### T10 — Incomplete inputs
 **Prompt:** "Will role `worker` be able to read from bucket `data`?"

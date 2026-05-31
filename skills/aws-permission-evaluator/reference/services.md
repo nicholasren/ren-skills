@@ -28,7 +28,6 @@ The evaluation procedure does not change per service. What changes is:
 | **EFS** | File system policy | `elasticfilesystem:` | needs IAM + FS policy | No | |
 | **Backup** | Vault access policy | `backup:` | needs IAM + vault policy | CMK enforced via key policy | Cross-account/-region copy gated by destination vault policy. |
 | **CodeArtifact** | Domain / repository policy | `codeartifact:` | needs IAM + policy | No | |
-| **ECR Public / Serverless / etc.** | Resource policy | service prefix | as above | varies | When in doubt, the generic rule holds: cross-account = IAM allow + resource policy allow. |
 
 ## How to use this with the decision walk
 

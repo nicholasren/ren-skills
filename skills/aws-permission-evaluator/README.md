@@ -36,5 +36,5 @@ be allowed to do Z", or "explain this AccessDenied".
 ## Install
 
 This skill is a self-contained directory of Markdown — no runtime, no dependencies. Install it
-into your agent's skills directory (`~/.agents/skills` or `~/.cursor/skills`) with the
-repository's `install.sh`, or just copy the folder there manually.
+into your agent's skills directory (`~/.agents/skills`) with the repository's `install.sh`, or
+just copy the folder there manually.

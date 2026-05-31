@@ -1,39 +1,15 @@
 #!/usr/bin/env bash
-# Install ren-skills into your agent's skills directory.
+# Install the skills in this repo into ~/.agents/skills.
 #
 # Usage:
-#   ./install.sh                          # auto-detect target, install all skills
+#   ./install.sh                          # install all skills
 #   ./install.sh aws-permission-evaluator # install one skill
-#   SKILLS_DIR=~/.cursor/skills ./install.sh
-#   curl -fsSL https://raw.githubusercontent.com/<you>/ren-skills/main/install.sh | bash
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-https://github.com/<you>/ren-skills.git}"
-
-# Source: local checkout if run from inside the repo, else clone.
-SELF="${BASH_SOURCE[0]:-$0}"
-SELF_DIR="$(cd "$(dirname "$SELF")" 2>/dev/null && pwd || true)"
-if [ -n "$SELF_DIR" ] && [ -d "$SELF_DIR/skills" ]; then
-  SRC="$SELF_DIR"
-  CLONED=""
-else
-  SRC="$(mktemp -d)"
-  echo "Fetching $REPO_URL ..."
-  git clone --depth 1 "$REPO_URL" "$SRC" >/dev/null 2>&1
-  CLONED="$SRC"
-fi
-
-# Target skills dir: explicit override > ~/.cursor > ~/.agents (default).
-if [ -n "${SKILLS_DIR:-}" ]; then
-  TARGET="$SKILLS_DIR"
-elif [ -d "$HOME/.cursor" ]; then
-  TARGET="$HOME/.cursor/skills"
-else
-  TARGET="$HOME/.agents/skills"
-fi
+SRC="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+TARGET="$HOME/.agents/skills"
 mkdir -p "$TARGET"
 
-# Which skills: args, else all under skills/.
 if [ "$#" -gt 0 ]; then
   SKILLS=("$@")
 else
@@ -51,6 +27,4 @@ for s in "${SKILLS[@]}"; do
     echo "Skill not found: $s" >&2
   fi
 done
-
-[ -n "$CLONED" ] && rm -rf "$CLONED"
 echo "Done."

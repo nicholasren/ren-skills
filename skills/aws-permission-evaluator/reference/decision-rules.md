@@ -30,29 +30,6 @@ answer changes the rules.
 - **Session policy** — an inline policy passed at `sts:AssumeRole`; further caps the session
   by the same intersection rule.
 
-### SCP allow semantics (the FullAWSAccess subtlety)
-
-A common misconception is "SCPs can only deny." Mechanically that's not quite right — SCPs are
-an **allowlist filter**: an action is permitted only if `Allow`ed by an SCP at every level of
-the hierarchy. The reason SCPs *feel* deny-only is the default `FullAWSAccess` policy AWS
-attaches to every root, OU, and account, which `Allow`s `"*"`.
-
-- **Default in place (`FullAWSAccess` attached):** everything is implicitly allowed at the SCP
-  layer; the only way an SCP restricts is via an explicit `"Effect": "Deny"`. ← most orgs
-- **`FullAWSAccess` removed / restrictive allow-list SCP:** any action not in the SCP's allow
-  set is denied **by absence** — no explicit `Deny` required.
-
-So when evaluating: if you don't know the org's SCP setup, assume the default (absence ≠ deny)
-unless told otherwise, but flag that a removed `FullAWSAccess` would change the answer. RCPs
-behave identically with their own default `RCPFullAWSAccess`.
-
-### SCP vs RCP symmetry
-
-| | Attached to | Constrains | Affects |
-|---|---|---|---|
-| **SCP** | Caller's org/OU/account | Identities in that scope | What *your* principals can call |
-| **RCP** | Resource owner's org/OU/account | Resources in that scope | What *anyone* (incl. external) can do *to your resources* |
-
 ## The core decision rule (ordered)
 
 1. **Explicit `Deny` anywhere wins.** A single `"Effect": "Deny"` in any policy — SCP, RCP,
@@ -84,6 +61,29 @@ behave identically with their own default `RCPFullAWSAccess`.
 4. Cross-account requires both sides to say yes (IAM **and** resource policy).
 5. SCP guards your principals; RCP guards your resources. Neither is bypassable by a
    resource-policy grant. Nothing overrides an explicit deny.
+
+### SCP allow semantics (the FullAWSAccess subtlety)
+
+A common misconception is "SCPs can only deny." Mechanically that's not quite right — SCPs are
+an **allowlist filter**: an action is permitted only if `Allow`ed by an SCP at every level of
+the hierarchy. The reason SCPs *feel* deny-only is the default `FullAWSAccess` policy AWS
+attaches to every root, OU, and account, which `Allow`s `"*"`.
+
+- **Default in place (`FullAWSAccess` attached):** everything is implicitly allowed at the SCP
+  layer; the only way an SCP restricts is via an explicit `"Effect": "Deny"`. ← most orgs
+- **`FullAWSAccess` removed / restrictive allow-list SCP:** any action not in the SCP's allow
+  set is denied **by absence** — no explicit `Deny` required.
+
+So when evaluating: if you don't know the org's SCP setup, assume the default (absence ≠ deny)
+unless told otherwise, but flag that a removed `FullAWSAccess` would change the answer. RCPs
+behave identically with their own default `RCPFullAWSAccess`.
+
+### SCP vs RCP symmetry
+
+| | Attached to | Constrains | Affects |
+|---|---|---|---|
+| **SCP** | Caller's org/OU/account | Identities in that scope | What *your* principals can call |
+| **RCP** | Resource owner's org/OU/account | Resources in that scope | What *anyone* (incl. external) can do *to your resources* |
 
 ## What's required, by scenario
 

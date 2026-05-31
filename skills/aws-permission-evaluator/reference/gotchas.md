@@ -41,9 +41,9 @@ instead had `"Effect": "Deny"` for `s3:PutObject` on those buckets → **denied*
 | Any explicit `Deny` (anywhere) | n/a | no |
 
 So:
-- SCP doesn't allow + resource policy allows → **Denied** (SCP wins, even same-account).
+- SCP blocks + resource policy allows → **Denied** (SCP wins, even same-account).
 - SCP explicit Deny + resource policy allows → **Denied**.
-- RCP doesn't allow + resource policy allows → **Denied**.
+- RCP blocks + resource policy allows → **Denied**.
 - RCP explicit Deny + resource policy allows → **Denied**.
 
 Resource-policy grants can paper over an *implicit* deny from a permission boundary, but never
@@ -65,3 +65,12 @@ resource's side. A grant on only one side fails.
 
 Unlike S3 and DynamoDB, KMS gives you nothing for free in the same account. The key policy is
 the gate, full stop. See `kms.md`.
+
+## 6. The SCP `FullAWSAccess` subtlety
+
+SCPs are technically an allowlist, but AWS attaches a default `FullAWSAccess` policy that
+allows everything. With it in place, only an explicit `Deny` restricts — absence does not
+deny. If `FullAWSAccess` has been removed and replaced with a restrictive allow-list SCP, then
+any action not explicitly allowed is denied by absence. RCPs work the same way via
+`RCPFullAWSAccess`. When the org's setup is unknown, assume the default and flag the
+assumption.

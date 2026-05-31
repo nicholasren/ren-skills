@@ -1,26 +1,18 @@
 # ren-skills
 
 A collection of agent-agnostic skills — self-contained Markdown directories that any agent
-which reads a skills folder (e.g. via `~/.agents/skills` or `~/.cursor/skills`) can use.
+which reads `~/.agents/skills` can use.
 
 ## Install
 
-One command, from a clone:
 ```bash
 git clone https://github.com/<you>/ren-skills.git && cd ren-skills && ./install.sh
 ```
 
-Or remotely:
+This copies every skill into `~/.agents/skills`. Install a single skill by name:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/<you>/ren-skills/main/install.sh | bash
+./install.sh aws-permission-evaluator
 ```
-
-By default the installer picks `~/.cursor/skills` if `~/.cursor` exists, otherwise
-`~/.agents/skills`. Override with `SKILLS_DIR`:
-```bash
-SKILLS_DIR=~/.agents/skills ./install.sh
-```
-Install a single skill by name: `./install.sh aws-permission-evaluator`.
 
 ## Skills
 

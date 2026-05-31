@@ -111,7 +111,7 @@ Fix: add `reader` (acct 7777) to the CMK key policy for kms:Decrypt (and Encrypt
 
 ---
 
-## Example 6b — Cross-account Lambda invoke, function policy silent
+## Example 6 — Cross-account Lambda invoke, function policy silent
 
 **Prose:** "Account 9999's EventBridge bus needs to invoke Lambda `processor` (acct 1234).
 The EventBridge target is configured, but `processor`'s resource policy has no statement for
@@ -136,7 +136,7 @@ Fix: add a permission to `processor` allowing the EventBridge principal / source
 
 ---
 
-## Example 6c — Same-account SQS send, IAM allows
+## Example 7 — Same-account SQS send, IAM allows
 
 **Prose:** "Service role `producer` (acct 5555) sends to queue `jobs` (acct 5555). IAM allows
 `sqs:SendMessage`, no boundary, queue policy is silent. SSE-SQS (not a CMK)."
@@ -161,15 +161,16 @@ Fix: none. (If it were a CMK and the producer encrypts, also need kms:GenerateDa
 
 ---
 
-## Example 7 — SCP blocks despite resource-policy grant
+## Example 8 — SCP blocks despite resource-policy grant
 
 **Prose:** "Role `svc` (acct 8888) needs `s3:DeleteObject` on same-account bucket `logs`,
-which grants it in the bucket policy. But the account's SCP doesn't include `s3:DeleteObject`."
+which grants it in the bucket policy. But the account has an explicit Deny SCP on
+`s3:DeleteObject`."
 
 ```
 Verdict: Denied
 
-Deciding rule: SCP must affirmatively allow the action; a resource-policy grant cannot bypass
-               an SCP (implicit or explicit).
-Fix: add s3:DeleteObject to the applicable SCP for acct 8888's OU.
+Deciding rule: an SCP block (explicit Deny, or absence when FullAWSAccess is removed) cannot be
+               bypassed by a resource-policy grant.
+Fix: remove the Deny / add s3:DeleteObject to the applicable SCP for acct 8888's OU.
 ```
