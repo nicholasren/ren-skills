@@ -18,6 +18,7 @@ Modern AccessDenied messages follow a fixed grammar:
 - **Explicit deny:** `... with an explicit deny in a <type> policy`
 - **Explicit deny + ARN** (rolling out since Jan 2026): `... with an explicit deny in a
   <type> policy: <policy ARN>` — the exact policy is named even if you can't read it.
+  Source: [AWS, additional policy details in access denied errors (Jan 2026)](https://aws.amazon.com/about-aws/whats-new/2026/01/additional-policy-details-access-denied-error/).
 
 | Phrase contains | Gate | What it means for you |
 |---|---|---|
