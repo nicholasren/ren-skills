@@ -21,9 +21,11 @@
   .wrap{max-width:1180px;margin:0 auto;padding:26px 18px 60px;}
   header h1{font-size:23px;margin:0 0 4px;}
   header p{color:var(--muted);margin:0 0 20px;max-width:760px;font-size:14px;}
-  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-  .presets button{font-size:12px;background:transparent;border:1px dashed var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;}
+  #presetSec .presets{display:none;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  #presetSec.open .presets{display:flex;}
+  .presets button{font-size:12px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:20px;cursor:pointer;transition:color .15s,border-color .15s;}
   .presets button:hover{color:var(--text);border-color:var(--accent);}
+  .presets button .pchev{color:var(--accent);font-size:10px;margin-right:3px;}
   .top{display:grid;grid-template-columns:330px 1fr;gap:20px;align-items:start;}
   @media(max-width:860px){.top{grid-template-columns:1fr;}}
   .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:16px 18px;}
@@ -53,6 +55,67 @@
   .rule{margin-top:14px;padding:12px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;}
   .rule .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700;margin-bottom:3px;}
   .rule .v{font-size:13.5px;margin-bottom:10px;}.rule .v:last-child{margin-bottom:0;}
+  .badge.dep{background:rgba(210,153,34,.13);color:var(--warn);border:1px solid var(--warn);}
+  .s-unk{color:var(--warn);}
+  /* cast / glossary */
+  .cast{margin:0 0 18px;border-bottom:1px solid var(--border);padding-bottom:16px;}
+  .cast-h{display:flex;align-items:baseline;gap:10px;cursor:pointer;user-select:none;font-weight:700;font-size:15px;color:var(--text);flex-wrap:wrap;}
+  .cast-h .chev{transition:transform .15s;color:var(--muted);font-size:12px;}
+  .cast.open .cast-h .chev{transform:rotate(90deg);}
+  .cast-sub{font-size:12.5px;color:var(--muted);font-weight:400;}
+  .cast-body{display:none;margin-top:14px;}
+  .cast.open .cast-body{display:block;}
+  /* grouped sections */
+  .cast-group{margin-top:18px;}
+  .cast-group:first-child{margin-top:4px;}
+  .cgh{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text);}
+  .cgh .cgh-sub{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);margin-left:8px;}
+  .cast-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:9px;}
+  .ccard{border:1px solid var(--border);border-left-width:4px;border-radius:10px;background:var(--panel2);scroll-margin-top:14px;transition:box-shadow .2s;overflow:hidden;align-self:start;}
+  .ccard.hl{box-shadow:0 0 0 2px var(--accent);}
+  /* clickable face */
+  .cface{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;cursor:pointer;user-select:none;}
+  .cface:hover{background:rgba(255,255,255,.018);}
+  .cface-t{flex:1;min-width:0;}
+  .cnum{flex:none;width:21px;height:21px;border-radius:50%;background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .cnum.cnum-cond{border:1px dashed #db61a2;color:#db61a2;background:rgba(219,97,162,.08);}
+  .chev2{flex:none;color:var(--muted);font-size:11px;margin-top:3px;transition:transform .15s;}
+  .ccard.open .chev2{transform:rotate(90deg);}
+  /* collapsible body */
+  .cbody{display:none;padding:11px 13px 13px;}
+  .ccard.open .cbody{display:block;border-top:1px solid var(--border);margin:0 0 0;}
+  .ccard h4{margin:0 0 2px;font-size:13.5px;}
+  .ccard .tags{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700;}
+  .ccard .row{display:flex;gap:8px;font-size:12.5px;margin-bottom:6px;line-height:1.45;}
+  .ccard .row:last-child{margin-bottom:0;}
+  .ccard .lab{flex:none;width:58px;color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.02em;padding-top:1px;}
+  .ccard.concept{border-left-color:#8b949e;}
+  /* enriched cast card */
+  .cface .caps{margin-top:7px;}
+  .ccard .caps{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;}
+  .ccard .cap{font-size:10px;font-weight:700;letter-spacing:.02em;padding:2px 7px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;}
+  .ccard .cap.yes{color:#3fb950;border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.10);}
+  .ccard .cap.no{color:#8b949e;}
+  .ccard .cap.warn{color:var(--warn);border-color:rgba(210,153,34,.4);background:rgba(210,153,34,.10);}
+  .cface .cond{margin-top:7px;}
+  .cond-b{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:20px;color:#db61a2;border:1px dashed rgba(219,97,162,.6);background:rgba(219,97,162,.08);}
+  .ccard .applies{font-size:11.5px;line-height:1.5;color:var(--text);background:rgba(219,97,162,.08);border:1px solid rgba(219,97,162,.3);border-left:3px solid #db61a2;border-radius:8px;padding:8px 10px;margin-bottom:10px;}
+  .ccard .applies b{color:#db61a2;}
+  .ccard .owner{font-size:11.5px;color:var(--muted);margin-bottom:8px;}
+  .ccard .owner b{color:var(--text);font-weight:600;}
+  .ccard details{margin-top:8px;}
+  .ccard details summary{cursor:pointer;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--accent);list-style:none;}
+  .ccard details summary::-webkit-details-marker{display:none;}
+  .ccard details summary::before{content:"▸ ";}
+  .ccard details[open] summary::before{content:"▾ ";}
+  .ccard pre{margin:8px 0 0;padding:9px 11px;background:var(--bg);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:11px;line-height:1.5;overflow-x:auto;color:var(--text);}
+  .ccard pre .hl-k{color:var(--accent);}
+  .ccard .demo{display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:var(--accent);cursor:pointer;border-bottom:1px dotted var(--accent);}
+  .ccard .demo:hover{filter:brightness(1.2);}
+  svg .clickable{cursor:pointer;}
+  svg .clickable:hover{filter:brightness(1.18);}
+  label .lk{cursor:pointer;border-bottom:1px dotted var(--muted);}
+  label .lk:hover{color:var(--accent);border-color:var(--accent);}
   footer{margin-top:24px;color:var(--muted);font-size:12px;}footer a{color:var(--accent);text-decoration:none;}
 </style>
 </head>
@@ -62,10 +125,28 @@
     <h1>Can I? <span style="color:var(--muted);font-weight:400;">— AWS permission evaluator</span></h1>
     <p>Toggle the scenario; the diagram and verdict update live. Press <strong>Run request</strong> to send a
        request through the gates and watch where it stops. Nested boxes are policy scopes — SCP/RCP wrap the
-       account, the boundary and identity/resource policies wrap the principal and resource.</p>
+       account, the boundary and identity/resource policies wrap the principal and resource.
+       Can't see a policy (SCP, RCP, boundary)? Set it to <strong>“?”</strong> and the evaluator turns
+       detective, ranking which hidden gate is the likely suspect.</p>
   </header>
 
-  <div class="presets" id="presets"></div>
+  <section class="cast" id="cast">
+    <div class="cast-h" id="castToggle">
+      <span class="chev">▶</span>
+      <span>The cast — what are these parties?</span>
+      <span class="cast-sub">New to AWS permissions? Start here — click any card to expand it, or click a box in the diagram below.</span>
+    </div>
+    <div class="cast-body" id="castBody"></div>
+  </section>
+
+  <section class="cast" id="presetSec">
+    <div class="cast-h" id="presetToggle">
+      <span class="chev">▶</span>
+      <span>Example scenarios</span>
+      <span class="cast-sub">Click one to load a worked situation into the controls and diagram below.</span>
+    </div>
+    <div class="presets" id="presets"></div>
+  </section>
 
   <div class="top">
     <div class="card" id="controls"></div>
@@ -100,7 +181,7 @@ const state={service:"s3",topology:"same",enc:"sse-s3",cmk:false,iam:"allow",bou
 const kmsApplies=s=>(s.service==="s3"&&s.enc==="cmk")||(s.service==="secretsmanager"&&s.cmk);
 
 /* ---------- decision logic (returns verdict, deciding gate, stop key) ---------- */
-function decide(s){
+function decideConcrete(s){
   const cross=s.topology==="cross", kms=kmsApplies(s), rcpOn=s.rcp!=="na";
   const ed=[];
   if(s.iam==="deny")ed.push(["iam","IAM identity policy"]);
@@ -133,32 +214,69 @@ function decide(s){
     fix="Add the principal to the CMK key policy (kms:Decrypt, plus Encrypt/GenerateDataKey if writing).";
   } else if(!cross){
     if(s.resource==="allow"){verdict="Allowed";stop="allowed";rule="Same-account resource-policy grant is sufficient on its own — and it overrules an implicit deny in the permission boundary.";}
-    else if(s.iam==="allow"&&s.boundary!=="silent"){verdict="Allowed";stop="allowed";rule="Same-account: an IAM Allow on the role is enough, and it sits within the permission boundary.";}
+    else if(s.iam==="allow"&&s.boundary!=="silent"){verdict="Allowed";stop="allowed";rule="Same-account: an IAM Allow on the Principal is enough, and it sits within the permission boundary.";}
     else if(s.iam==="allow"&&s.boundary==="silent"){verdict="Denied";stop="boundary";rule="IAM allows it, but the permission boundary doesn't include the action (implicit deny) and no resource-policy grant is present to bypass it.";fix="Add the action to the boundary, or add a resource-policy grant.";}
-    else {verdict="Denied";stop="iam";rule="Nothing grants the action: neither the IAM identity policy nor the resource policy allows it.";fix="Add an IAM Allow on the role, or a resource-policy grant.";}
+    else {verdict="Denied";stop="iam";rule="Nothing grants the action: neither the IAM identity policy nor the resource policy allows it.";fix="Add an IAM Allow on the Principal, or a resource-policy grant.";}
   } else {
-    if(s.iam!=="allow"){verdict="Denied";stop="iam";rule="Cross-account requires an IAM Allow on the calling principal in its own account — it isn't present.";fix="Add an IAM Allow on the role in the caller account.";}
+    if(s.iam!=="allow"){verdict="Denied";stop="iam";rule="Cross-account requires an IAM Allow on the calling principal in its own account — it isn't present.";fix="Add an IAM Allow on the Principal in the caller account.";}
     else if(s.resource!=="allow"){verdict="Denied";stop="resource";rule="Cross-account requires the resource policy to grant the principal — both sides must say yes. It doesn't.";fix=`Add a statement to the ${RES_LABEL[s.service].toLowerCase()} naming the principal.`;}
-    else if(s.boundary==="silent"){verdict="Denied";stop="boundary";rule="Cross-account does NOT get the resource-policy-bypasses-boundary shortcut; the boundary's implicit deny caps the role independently.";fix="Add the action to the permission boundary in the caller account.";}
+    else if(s.boundary==="silent"){verdict="Denied";stop="boundary";rule="Cross-account does NOT get the resource-policy-bypasses-boundary shortcut; the boundary's implicit deny caps the Principal independently.";fix="Add the action to the permission boundary in the caller account.";}
     else {verdict="Allowed";stop="allowed";rule="Cross-account: an IAM Allow on the caller AND a resource-policy grant — both sides say yes"+(kms?", and the key policy enumerates the principal.":".");}
   }
   return {verdict,stop,rule,fix,cross,kms,rcpOn};
 }
 
+/* ---------- diagnose layer: "?" gates → ranked suspects ---------- */
+const UNK_OPTS={scp:["allow","deny"],rcp:["allow","deny"],boundary:["none","silent","deny"]};
+const SUSPECT_INFO={
+  scp:{name:"Caller SCP",why:"an org guardrail on your account you can't read — an explicit Deny (or a removed FullAWSAccess) blocks regardless of every visible Allow",
+       test:"same call from a privileged role in the same account (also denied → account-level), or aws iam simulate-principal-policy, which folds in SCPs you can't read"},
+  boundary:{name:"Permission boundary",why:"if one is attached to the Principal, it caps the identity policy",
+       test:"aws iam get-role --role-name <r> reveals whether a boundary is attached (and its ARN) even without read access to the document"},
+  rcp:{name:"Resource-account RCP",why:"the resource owner's org screens every caller; a resource-policy grant can't override it",
+       test:"have a principal inside the resource's account try the same call locally — denied too → resource-side gate"},
+};
+function decide(s){
+  const unknowns=["scp","rcp","boundary"].filter(k=>s[k]==="unknown");
+  if(!unknowns.length)return decideConcrete(s);
+  const best={...s};unknowns.forEach(k=>best[k]=(k==="boundary"?"none":"allow"));
+  const base=decideConcrete(best);
+  if(base.verdict==="Denied"){
+    base.rule="A visible gate already denies — the hidden ones are moot here. "+base.rule;
+    return base;
+  }
+  const suspects=[];
+  ["scp","boundary","rcp"].forEach(k=>{
+    if(!unknowns.includes(k))return;
+    const vals=UNK_OPTS[k].filter(v=>{const t={...best};t[k]=v;return decideConcrete(t).verdict==="Denied";});
+    if(vals.length)suspects.push({key:k,vals,info:SUSPECT_INFO[k]});
+  });
+  if(!suspects.length){
+    base.rule+=" The hidden gates can't change this outcome in this scenario.";
+    return base;
+  }
+  const rule="Every visible gate passes — so if you're seeing AccessDenied, a hidden gate is the culprit. Ranked: "+
+    suspects.map((sp,i)=>`${i+1}) ${sp.info.name} — ${sp.info.why}.`).join(" ")+
+    " (Outside this model, also check: an unmet Condition on a visible policy, a session policy, a VPC endpoint policy.)";
+  const fix="Discriminate — "+suspects.map(sp=>`${sp.info.name}: ${sp.info.test}`).join(" · ")+
+    ". Then escalate with principal ARN + action + resource ARN + the full error text.";
+  return {verdict:"Depends",stop:suspects[0].key,rule,fix,cross:base.cross,kms:base.kms,rcpOn:base.rcpOn,suspects};
+}
+
 /* ---------- per-box status ---------- */
 function statuses(s,d){
   const cross=d.cross,kms=d.kms,rcpOn=d.rcpOn;
-  const scp = s.scp==="allow"?"pass":"fail";
-  const rcp = !rcpOn?"na":s.rcp==="allow"?"pass":"fail";
+  const scp = s.scp==="unknown"?"unk":s.scp==="allow"?"pass":"fail";
+  const rcp = !rcpOn?"na":s.rcp==="unknown"?"unk":s.rcp==="allow"?"pass":"fail";
   let iam = s.iam==="allow"?"pass":s.iam==="deny"?"fail":((!cross&&s.resource==="allow")?"na":"impl");
   let res = s.resource==="allow"?"pass":s.resource==="deny"?"fail":(cross?"fail":"na");
-  let bnd = s.boundary==="none"?"na":s.boundary==="allow"?"pass":s.boundary==="deny"?"fail":((!cross&&s.resource==="allow")?"impl":"impl");
+  let bnd = s.boundary==="unknown"?"unk":s.boundary==="none"?"na":s.boundary==="allow"?"pass":s.boundary==="deny"?"fail":((!cross&&s.resource==="allow")?"impl":"impl");
   let enc = !kms?"na":s.kms==="enumerate"?"pass":"fail";
   if(s.service==="s3"&&s.enc==="aws-s3"&&cross)enc="fail";
   return {scp,rcp,iam,res,bnd,enc};
 }
-const STROKE={pass:"#3fb950",fail:"#f85149",impl:"#d29922",na:"#8b949e",neutral:"#4493f8"};
-const DASH ={pass:"none",fail:"none",impl:"6 4",na:"3 4",neutral:"none"};
+const STROKE={pass:"#3fb950",fail:"#f85149",impl:"#d29922",na:"#8b949e",unk:"#d29922",neutral:"#4493f8"};
+const DASH ={pass:"none",fail:"none",impl:"6 4",na:"3 4",unk:"1 5",neutral:"none"};
 
 /* ---------- diagram geometry ---------- */
 const TX_SAME=-176, TX_CROSS=0, Y=160;
@@ -194,7 +312,7 @@ function drawDiagram(s,d){
   <rect id="identityBox" x="70" y="104" width="180" height="112" rx="8" fill="#1f6feb" fill-opacity="0.06"/>
   <text x="80" y="120" font-size="9.5" font-weight="700" fill="#1f6feb">IDENTITY POLICY</text>
   <circle id="roleNode" cx="160" cy="${Y}" r="26" fill="#1f6feb" fill-opacity="0.16" stroke="#1f6feb" stroke-width="1.6"/>
-  <text x="160" y="${Y+4}" font-size="11" font-weight="700" fill="#1f6feb" text-anchor="middle">role</text>
+  <text x="160" y="${Y+4}" font-size="8.5" font-weight="700" fill="#1f6feb" text-anchor="middle">Principal</text>
 
   <!-- resource group (translated for same/cross) -->
   <g id="resGroup" transform="translate(${tx},0)">
@@ -207,7 +325,7 @@ function drawDiagram(s,d){
     <rect id="resPolBox" x="534" y="104" width="180" height="112" rx="8" fill="#238636" fill-opacity="0.06"/>
     <text x="544" y="120" font-size="9.5" font-weight="700" fill="#1a7f37">${RES_LABEL[s.service].toUpperCase()}</text>
     <rect id="resNode" x="603" y="${Y-26}" width="52" height="52" rx="8" fill="#238636" fill-opacity="0.16" stroke="#238636" stroke-width="1.6"/>
-    <text x="629" y="${Y+4}" font-size="10.5" font-weight="700" fill="#1a7f37" text-anchor="middle">res</text>
+    <text x="629" y="${Y+4}" font-size="8.5" font-weight="700" fill="#1a7f37" text-anchor="middle">Resource</text>
   </g>
 
   <!-- request dot + pulse (hidden until Run) -->
@@ -222,22 +340,24 @@ function drawDiagram(s,d){
   set("identityBox",st.iam); set("resPolBox",st.res); set("encBox",st.enc);
   // accounts neutral
   ["acctA","acctB"].forEach(id=>{const e=document.getElementById(id);if(e){e.setAttribute("stroke",STROKE.neutral);e.setAttribute("stroke-width","2");e.setAttribute("stroke-dasharray","none");}});
+  // make boxes clickable → open matching cast card
+  Object.keys(DIAG2CAST).forEach(bid=>{const e=document.getElementById(bid);if(e){e.setAttribute("data-cast",DIAG2CAST[bid]);e.classList.add("clickable");}});
 }
 
 /* ---------- gate table ---------- */
 function gateTable(s,d){
   const {scp,rcp,iam,res,bnd,enc}=statuses(s,d);
-  const lab={pass:"pass",fail:"FAIL",impl:"implicit",na:"n/a"};
-  const cls={pass:"s-pass",fail:"s-fail",impl:"s-impl",na:"s-na"};
+  const lab={pass:"pass",fail:"FAIL",impl:"implicit",na:"n/a",unk:"?"};
+  const cls={pass:"s-pass",fail:"s-fail",impl:"s-impl",na:"s-na",unk:"s-unk"};
   const cross=d.cross;
   const anyDeny=(s.iam==="deny"||s.boundary==="deny"||s.resource==="deny"||s.scp==="deny"||(d.rcpOn&&s.rcp==="deny")||(d.kms&&s.kms==="deny"));
   const rows=[
     ["explicit","Explicit deny anywhere",anyDeny?"fail":"pass",anyDeny?"an explicit Deny is present":"none found"],
-    ["scp","Caller SCP allows",scp, s.scp==="allow"?"FullAWSAccess / allowed":s.scp==="deny"?"explicit Deny":"not in allow-list"],
-    ["rcp","Resource-acct RCP allows",rcp, !d.rcpOn?"no RCP in play":s.rcp==="allow"?"allowed":s.rcp==="deny"?"explicit Deny":"not in allow-list"],
+    ["scp","Caller SCP allows",scp, s.scp==="unknown"?"can't see it — suspect; test or escalate":s.scp==="allow"?"FullAWSAccess / allowed":s.scp==="deny"?"explicit Deny":"not in allow-list"],
+    ["rcp","Resource-acct RCP allows",rcp, !d.rcpOn?"no RCP in play":s.rcp==="unknown"?"can't see it — resource-side suspect":s.rcp==="allow"?"allowed":s.rcp==="deny"?"explicit Deny":"not in allow-list"],
     ["iam","IAM identity allows",iam, s.iam==="allow"?"allows the action":s.iam==="deny"?"explicit Deny":(!cross&&s.resource==="allow")?"not required — resource grants":"silent → implicit deny"],
     ["resource",RES_LABEL[s.service]+" allows",res, s.resource==="allow"?"grants the principal":s.resource==="deny"?"explicit Deny":cross?"required cross-account, but silent":"not required same-account"],
-    ["boundary","Permission boundary",bnd, s.boundary==="none"?"no boundary attached":s.boundary==="allow"?"includes the action":s.boundary==="deny"?"explicit Deny":(!cross&&s.resource==="allow")?"implicit, bypassed by resource grant":"action not in allow set"],
+    ["boundary","Permission boundary",bnd, s.boundary==="unknown"?"can't see it — is one attached? (iam get-role)":s.boundary==="none"?"no boundary attached":s.boundary==="allow"?"includes the action":s.boundary==="deny"?"explicit Deny":(!cross&&s.resource==="allow")?"implicit, bypassed by resource grant":"action not in allow set"],
     ["kms","KMS key policy enumerates",enc, !d.kms?"caller doesn't touch a CMK":(s.service==="s3"&&s.enc==="aws-s3"&&cross)?"aws/s3 can't go cross-account":s.kms==="enumerate"?"enumerates principal":s.kms==="deny"?"explicit Deny":"not enumerated (deny-by-default)"]
   ];
   const tb=document.getElementById("gates");tb.innerHTML="";
@@ -254,8 +374,8 @@ let lastD=null;
 function render(){
   const d=decide(state); lastD=d;
   const b=document.getElementById("badge");
-  b.className="badge "+(d.verdict==="Allowed"?"ok":"no"); b.textContent=d.verdict;
-  document.getElementById("vsub").textContent=d.verdict==="Allowed"?"the request goes through":"the request is blocked";
+  b.className="badge "+(d.verdict==="Allowed"?"ok":d.verdict==="Depends"?"dep":"no"); b.textContent=d.verdict;
+  document.getElementById("vsub").textContent=d.verdict==="Allowed"?"the request goes through":d.verdict==="Depends"?"a hidden gate decides — see suspects below":"the request is blocked";
   drawDiagram(state,d);
   gateTable(state,d);
   document.getElementById("rule").textContent=d.rule;
@@ -286,9 +406,8 @@ function runRequest(){
     dot.setAttribute("cx",x);
     if(p<1){anim=requestAnimationFrame(step);}
     else{
-      const ok=d.verdict==="Allowed";
       pulse.setAttribute("cx",target);
-      pulse.setAttribute("stroke",ok?STROKE.pass:STROKE.fail);
+      pulse.setAttribute("stroke",d.verdict==="Allowed"?STROKE.pass:d.verdict==="Depends"?STROKE.impl:STROKE.fail);
       pulse.setAttribute("opacity","1");
       let r=8,dir=1,frames=0;
       function pul(){
@@ -305,22 +424,26 @@ function runRequest(){
 /* ---------- controls ---------- */
 const FIELDS=[
   {key:"service",label:"Service",opts:[["s3","S3"],["dynamodb","DynamoDB"],["lambda","Lambda"],["sqs","SQS"],["sns","SNS"],["secretsmanager","Secrets Mgr"],["ecr","ECR"],["other","Other"]]},
-  {key:"topology",label:"Account topology",opts:[["same","Same account"],["cross","Cross-account"]],hint:"Same-account is generous (IAM alone can suffice). Cross-account needs both sides."},
-  {key:"enc",label:"S3 encryption",opts:[["sse-s3","SSE-S3"],["aws-s3","SSE-KMS aws/s3"],["cmk","SSE-KMS CMK"]],when:s=>s.service==="s3",hint:"aws/s3 can't go cross-account; a CMK adds a key-policy gate."},
-  {key:"cmk",label:"CMK-encrypted?",opts:[[false,"No"],[true,"Yes (CMK)"]],when:s=>s.service==="secretsmanager",hint:"A CMK adds a key-policy gate the caller must pass."},
-  {key:"iam",label:"IAM identity policy",opts:[["allow","Allow"],["silent","Silent"],["deny","Explicit Deny"]]},
-  {key:"boundary",label:"Permission boundary",opts:[["none","None"],["allow","Allows"],["silent","Silent (implicit)"],["deny","Explicit Deny"]],hint:"A resource grant bypasses a SILENT boundary (same-account only) — never an explicit Deny."},
-  {key:"resource",label:s=>RES_LABEL[s.service],opts:[["allow","Grants principal"],["silent","Silent"],["deny","Explicit Deny"]]},
-  {key:"scp",label:"Caller SCP",opts:[["allow","Allows (default)"],["restrictive","Not in allow-list"],["deny","Explicit Deny"]],hint:"With default FullAWSAccess only an explicit Deny restricts."},
-  {key:"rcp",label:"Resource-acct RCP",opts:[["na","n/a"],["allow","Allows"],["restrictive","Not in allow-list"],["deny","Explicit Deny"]]},
-  {key:"kms",label:"KMS key policy",opts:[["enumerate","Enumerates principal"],["silent","Silent"],["deny","Explicit Deny"]],when:s=>kmsApplies(s),hint:"KMS is deny-by-default; the principal must be named or condition-matched."},
+  {key:"topology",label:"Account topology",cast:"samecross",opts:[["same","Same account"],["cross","Cross-account"]],hint:"Same-account is generous (IAM alone can suffice). Cross-account needs both sides."},
+  {key:"enc",label:"S3 encryption",cast:"kms",opts:[["sse-s3","SSE-S3"],["aws-s3","SSE-KMS aws/s3"],["cmk","SSE-KMS CMK"]],when:s=>s.service==="s3",hint:"aws/s3 can't go cross-account; a CMK adds a key-policy gate."},
+  {key:"cmk",label:"CMK-encrypted?",cast:"kms",opts:[[false,"No"],[true,"Yes (CMK)"]],when:s=>s.service==="secretsmanager",hint:"A CMK adds a key-policy gate the caller must pass."},
+  {key:"iam",label:"IAM identity policy",cast:"iam",opts:[["allow","Allow"],["silent","Silent"],["deny","Explicit Deny"]]},
+  {key:"boundary",label:"Permission boundary",cast:"boundary",opts:[["none","None"],["allow","Allows"],["silent","Silent (implicit)"],["deny","Explicit Deny"],["unknown","? Can't see"]],hint:"A resource grant bypasses a SILENT boundary (same-account only) — never an explicit Deny. Can't see yours? Pick “?”."},
+  {key:"resource",label:s=>RES_LABEL[s.service],cast:"resource_policy",opts:[["allow","Grants principal"],["silent","Silent"],["deny","Explicit Deny"]]},
+  {key:"scp",label:"Caller SCP",cast:"scp",opts:[["allow","Allows (default)"],["restrictive","Not in allow-list"],["deny","Explicit Deny"],["unknown","? Can't see"]],hint:"With default FullAWSAccess only an explicit Deny restricts."},
+  {key:"rcp",label:"Resource-acct RCP",cast:"rcp",opts:[["na","n/a"],["allow","Allows"],["restrictive","Not in allow-list"],["deny","Explicit Deny"],["unknown","? Can't see"]]},
+  {key:"kms",label:"KMS key policy",cast:"kms",opts:[["enumerate","Enumerates principal"],["silent","Silent"],["deny","Explicit Deny"]],when:s=>kmsApplies(s),hint:"KMS is deny-by-default; the principal must be named or condition-matched."},
 ];
 function buildControls(){
   const root=document.getElementById("controls");root.innerHTML="";
   FIELDS.forEach(f=>{
     if(f.when&&!f.when(state))return;
     const wrap=document.createElement("div");wrap.className="field";
-    const lab=document.createElement("label");lab.textContent=(typeof f.label==="function")?f.label(state):f.label;wrap.appendChild(lab);
+    const lab=document.createElement("label");
+    const labText=(typeof f.label==="function")?f.label(state):f.label;
+    if(f.cast){lab.innerHTML=`<span class="lk" data-cast="${f.cast}">${labText}</span>`;lab.querySelector(".lk").onclick=()=>openCard(f.cast);}
+    else{lab.textContent=labText;}
+    wrap.appendChild(lab);
     const seg=document.createElement("div");seg.className="seg";
     f.opts.forEach(([val,txt])=>{
       const b=document.createElement("button");b.textContent=txt;b.setAttribute("aria-pressed",String(state[f.key]===val));
@@ -343,18 +466,180 @@ const PRESETS=[
   ["Cross-acct S3 aws/s3",{topology:"cross",enc:"aws-s3",iam:"allow",resource:"allow"}],
   ["Cross-acct CMK, key silent",{topology:"cross",enc:"cmk",iam:"allow",resource:"allow",kms:"silent"}],
   ["SCP explicit-denies",{resource:"allow",scp:"deny"}],
+  ["Diagnose: can't see SCP/boundary",{iam:"allow",resource:"silent",boundary:"unknown",scp:"unknown"}],
 ];
 function buildPresets(){
   const root=document.getElementById("presets");
   PRESETS.forEach(([name,patch])=>{
-    const b=document.createElement("button");b.textContent=name;
+    const b=document.createElement("button");b.innerHTML=`<span class="pchev">▶</span>${name}`;
     b.onclick=()=>{Object.assign(state,BASE,patch);buildControls();render();};
     root.appendChild(b);
   });
 }
 
+/* ---------- the cast (glossary + click-to-explain) ---------- */
+const CAST=[
+  {id:"principal",name:"Principal",tags:"who is asking · the caller",color:"#1f6feb",
+   analogy:"The visitor at the door asking to do something — usually an app or service acting on its own behalf.",
+   tech:"The identity making the request: an IAM role (or user), identified by its ARN. Lives in one AWS account.",
+   owner:"Created and controlled by <b>you / your team</b>, in your own account.",
+   example:{summary:"Show example identity",caption:"The role ARN that names the caller:",code:"arn:aws:iam::123456789012:role/etl-task"}},
+  {id:"resource",name:"Resource",tags:"what they want · the Resource",color:"#238636",
+   analogy:"The room or item the visitor wants to touch — a file, a database table, a key.",
+   tech:"The thing being acted on — an S3 bucket/object, DynamoDB table, KMS key, etc. May live in a different account than the principal.",
+   owner:"Owned by <b>whichever account it lives in</b> — yours, or another team's. That fork is what makes access same- vs cross-account.",
+   example:{summary:"Show example identity",caption:"An object ARN — the thing being acted on:",code:"arn:aws:s3:::data-lake/reports/q2.csv"}},
+  {id:"action",name:"Action",tags:"the verb",color:"#57606a",
+   analogy:"The specific thing they're trying to do — open the door, read a file, shred a document.",
+   tech:"One service API operation, like s3:GetObject or dynamodb:DeleteTable. A request is always one principal + one action + one resource.",
+   owner:"Defined by <b>AWS</b> — each service publishes its own list of actions.",
+   example:{summary:"Show example",caption:"Always one service:operation per request:",code:"s3:GetObject"}},
+  {id:"iam",name:"IAM identity policy",tags:"on the Principal · allow or deny",color:"#1f6feb",
+   analogy:"The visitor's own keycard — the permissions they personally carry. It can also carry a “banned” flag that blocks specific doors.",
+   tech:"A policy on the Principal. Usually grants permissions with Allow, but it can also contain an explicit Deny that blocks. Same-account, an Allow here is often enough on its own.",
+   caps:[["Grants","yes"],["Denies","yes"],["Not enough cross-acct","warn"]],
+   owner:"Controlled by <b>you / your team</b> — attached to the role in your own account.",
+   example:{caption:"An identity policy granting read — note there's no Principal, it's attached to one:",code:`{
+  "Effect": "Allow",
+  "Action":   "s3:GetObject",
+  "Resource": "arn:aws:s3:::data-lake/*"
+}`},
+   demo:{label:"▶ See it decide — explicit Deny on the identity policy",patch:{iam:"deny"}}},
+  {id:"boundary",name:"Permission boundary",tags:"on the Principal · only caps",color:"#d29922",
+   analogy:"The maximum clearance a keycard can ever reach — even if someone grants more, the boundary caps it. It never opens a door by itself.",
+   tech:"A policy on the Principal that sets a ceiling on its IAM permissions. Effective set = identity policy ∩ boundary. Never grants.",
+   caps:[["Grants","no"],["Caps only","warn"],["Can Deny","yes"]],
+   owner:"Set by <b>your platform / security team</b> — they attach it to cap what your roles can ever do.",
+   example:{caption:"A boundary capping the role to S3 reads — the ceiling, even if the identity policy grants more:",code:`{
+  "Effect": "Allow",
+  "Action":   ["s3:Get*", "s3:List*"],
+  "Resource": "*"
+}`},
+   demo:{label:"▶ See it decide — explicit Deny in the boundary",patch:{boundary:"deny"}}},
+  {id:"resource_policy",name:"Resource policy",tags:"on the resource · allow or deny",color:"#238636",
+   analogy:"The door's guest list — who the room owner lets in. The same list can also name people to turn away.",
+   tech:"A policy on the resource (bucket policy, table resource policy, key policy). Grants access to named principals with Allow, and can also explicitly Deny. Required for cross-account access.",
+   caps:[["Grants","yes"],["Denies","yes"],["Required cross-acct","warn"]],
+   owner:"Controlled by the <b>resource owner's account</b> — if the bucket is theirs, they write this, not you. You ask them to add your principal.",
+   example:{caption:"A bucket policy granting one cross-account role read access:",code:`{
+  "Effect": "Allow",
+  "Principal": { "AWS": "arn:aws:iam::111122223333:role/etl" },
+  "Action":   "s3:GetObject",
+  "Resource": "arn:aws:s3:::data-lake/*"
+}`},
+   demo:{label:"▶ See it decide — cross-account, no resource grant",patch:{topology:"cross",iam:"allow",boundary:"none",resource:"silent"}}},
+  {id:"scp",name:"SCP (Service Control Policy)",tags:"at the org · only restricts",color:"#a371f7",
+   analogy:"Your company's staff handbook — what your own employees may do, checked before they leave the office. Says nothing about outsiders.",
+   tech:"An org/OU/account guardrail on principals. Can only restrict; with the default FullAWSAccess attached, only an explicit Deny actually bites.",
+   caps:[["Grants","no"],["Restricts only","warn"],["Explicit Deny bites","yes"]],
+   owner:"Controlled by your <b>org's platform team</b> — you usually can't even read it. Escalate; you can't fix it yourself.",
+   example:{caption:"A guardrail denying an action across the whole org:",code:`{
+  "Effect": "Deny",
+  "Action":   "s3:DeleteBucket",
+  "Resource": "*"
+}`},
+   demo:{label:"▶ See it decide — SCP explicit-denies the action",patch:{resource:"allow",scp:"deny"}}},
+  {id:"rcp",name:"RCP (Resource Control Policy)",tags:"at the org · only restricts",color:"#2da884",
+   analogy:"Building management's screening desk in the lobby — every visitor, your staff or a stranger, must clear it before reaching your rooms, and a door's guest list can't wave them past.",
+   tech:"An org/OU/account guardrail on resources. Applies to every caller including external accounts; can only restrict, and can't be bypassed by a resource policy.",
+   caps:[["Grants","no"],["Restricts only","warn"],["Hits external callers","yes"]],
+   owner:"Controlled by the <b>resource owner's org / platform team</b> — gates every caller, even from other accounts.",
+   example:{caption:"Blocks any principal outside the org — a bucket-policy grant can't override it:",code:`{
+  "Effect": "Deny",
+  "Principal": "*",
+  "Action":   "s3:*",
+  "Resource": "*",
+  "Condition": { "StringNotEquals": { "aws:PrincipalOrgID": "o-abc123" } }
+}`},
+   demo:{label:"▶ See it decide — RCP restricts the resource",patch:{topology:"cross",iam:"allow",resource:"allow",rcp:"deny"}}},
+  {id:"kms",name:"KMS key policy",tags:"on the key · grants (deny-by-default)",color:"#db61a2",
+   analogy:"A separate safe inside the room — even if you're allowed in the room, you must be on the safe's own list to open it.",
+   tech:"The policy on a customer-managed KMS key. KMS is deny-by-default: the principal must be named or condition-matched in the key policy. IAM alone never unlocks a CMK.",
+   applies:"<b>Conditional gate.</b> Only evaluated when the request actually touches a customer-managed KMS key (CMK) — e.g. the S3 object is SSE-KMS encrypted, or the secret uses a CMK. No KMS in the picture and this gate is skipped entirely; the other five always apply.",
+   caps:[["Grants","yes"],["Deny-by-default","warn"],["IAM can't bypass","no"]],
+   owner:"Controlled by the <b>key's owner</b> (often a separate security team) — access to the resource doesn't include its key.",
+   example:{caption:"A key policy letting a role use the CMK:",code:`{
+  "Effect": "Allow",
+  "Principal": { "AWS": "arn:aws:iam::111122223333:role/etl" },
+  "Action":   ["kms:Decrypt", "kms:GenerateDataKey"],
+  "Resource": "*"
+}`},
+   demo:{label:"▶ See it decide — CMK, key policy silent",patch:{enc:"cmk",iam:"allow",resource:"allow",kms:"silent"}}},
+  {id:"samecross",name:"Same vs cross-account",concept:true,tags:"the most important fork",color:"#8b949e",
+   analogy:"Same building vs two different buildings. Inside one building your keycard often suffices; across buildings, both the visitor's company AND the other building must say yes.",
+   tech:"If principal account == resource account it's same-account (an IAM Allow can be enough). Otherwise cross-account: you need an IAM Allow AND a resource-policy grant.",
+   demo:{label:"▶ See it — cross-account, IAM alone isn't enough",patch:{topology:"cross",iam:"allow",boundary:"none",resource:"silent"}}},
+  {id:"denytypes",name:"Explicit vs implicit deny",concept:true,tags:"why a grant sometimes isn't enough",color:"#8b949e",
+   analogy:"A posted “NO ENTRY” sign vs simply not being on the guest list. The sign stops you no matter what; not being listed can sometimes be overridden by another pass.",
+   tech:"An explicit Deny in any policy always wins. An implicit deny (no matching Allow) can be overruled — e.g. a resource-policy grant overrides an implicit deny in a permission boundary (same-account only).",
+   demo:{label:"▶ See it — a grant overriding an implicit deny",patch:{iam:"silent",boundary:"silent",resource:"allow"}}},
+];
+const DIAG2CAST={roleNode:"principal",resNode:"resource",identityBox:"iam",boundaryBox:"boundary",resPolBox:"resource_policy",scpBox:"scp",rcpBox:"rcp",encBox:"kms",acctA:"samecross",acctB:"samecross"};
+const CAST2DIAG={};Object.entries(DIAG2CAST).forEach(([b,c])=>{(CAST2DIAG[c]=CAST2DIAG[c]||[]).push(b);});
+
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const jsonHL=s=>esc(s).replace(/(&quot;|")?([\w]+)(&quot;|")?(\s*:)/g,(m,q1,k,q2,c)=>`<span class="hl-k">"${k}"</span>${c}`);
+const CAST_GROUPS=[
+  {key:"request",title:"The request",sub:"what every call is made of"},
+  {key:"gate",title:"The gates",sub:"each can stop the call — grouped by where it lives: org guardrails, the principal's policies, then the resource's (an explicit Deny in any wins outright)"},
+  {key:"concept",title:"Key concepts",sub:"the rules that tie it together"},
+];
+const GROUP_OF={principal:"request",resource:"request",action:"request",scp:"gate",rcp:"gate",iam:"gate",resource_policy:"gate",boundary:"gate",kms:"gate",samecross:"concept",denytypes:"concept"};
+const GATE_ORDER=["scp","rcp","iam","boundary","resource_policy","kms"]; // grouped: org guardrails, principal-side (IAM+boundary adjacent), resource-side
+function buildCast(){
+  const body=document.getElementById("castBody");body.innerHTML="";
+  CAST_GROUPS.forEach(g=>{
+    let members=CAST.filter(c=>GROUP_OF[c.id]===g.key);
+    if(g.key==="gate")members=members.slice().sort((a,b)=>GATE_ORDER.indexOf(a.id)-GATE_ORDER.indexOf(b.id));
+    const sec=document.createElement("div");sec.className="cast-group";
+    sec.innerHTML=`<div class="cgh">${g.title}<span class="cgh-sub">${g.sub}</span></div><div class="cast-grid"></div>`;
+    const grid=sec.querySelector(".cast-grid");
+    members.forEach(c=>{
+      const num=g.key==="gate"?(GATE_ORDER.indexOf(c.id)+1):null;
+      const d=document.createElement("div");
+      d.className="ccard"+(c.concept?" concept":"");d.id="card-"+c.id;
+      d.style.borderLeftColor=c.color;
+      let caps=c.caps?`<div class="caps">${c.caps.map(([t,k])=>`<span class="cap ${k}">${k==="yes"?"✓ ":k==="no"?"✕ ":""}${t}</span>`).join("")}</div>`:"";
+      let cond=c.applies?`<div class="cond"><span class="cond-b">⚡ conditional — only if KMS-encrypted</span></div>`:"";
+      let face=`<div class="cface">${num?`<span class="cnum${c.applies?" cnum-cond":""}">${num}</span>`:""}<div class="cface-t"><h4 style="color:${c.color}">${c.name}</h4><div class="tags">${c.tags}</div>${cond}${caps}</div><span class="chev2">▶</span></div>`;
+      let b="";
+      if(c.applies)b+=`<div class="applies">${c.applies}</div>`;
+      if(c.owner)b+=`<div class="owner">${c.owner}</div>`;
+      b+=`<div class="row"><span class="lab">Like</span><span>${c.analogy}</span></div>`+
+         `<div class="row"><span class="lab">In AWS</span><span>${c.tech}</span></div>`;
+      if(c.example){const code=/^\s*[\{\[]/.test(c.example.code)?jsonHL(c.example.code):esc(c.example.code);b+=`<details><summary>${c.example.summary||"Show example policy"}</summary><div style="font-size:11.5px;color:var(--muted);margin-top:6px">${c.example.caption}</div><pre>${code}</pre></details>`;}
+      if(c.demo)b+=`<span class="demo" data-demo="${c.id}">${c.demo.label}</span>`;
+      d.innerHTML=face+`<div class="cbody">${b}</div>`;
+      d.querySelector(".cface").onclick=()=>toggleCard(c.id);
+      const dl=d.querySelector("[data-demo]");
+      if(dl)dl.onclick=()=>{Object.assign(state,BASE,c.demo.patch);buildControls();render();document.getElementById("diagram").scrollIntoView({behavior:"smooth",block:"center"});};
+      grid.appendChild(d);
+    });
+    body.appendChild(sec);
+  });
+}
+function toggleCard(id){
+  const card=document.getElementById("card-"+id);if(!card)return;
+  const wasOpen=card.classList.contains("open");
+  document.querySelectorAll(".ccard.open").forEach(e=>e.classList.remove("open"));
+  if(!wasOpen){card.classList.add("open");flashBoxes(CAST2DIAG[id]);}
+}
+function flashBoxes(ids){(ids||[]).forEach(id=>{const e=document.getElementById(id);if(!e)return;try{e.animate([{strokeWidth:"2px"},{strokeWidth:"6px"},{strokeWidth:"2px"}],{duration:1000});}catch(_){}});}
+function openCard(id){
+  const cast=document.getElementById("cast");cast.classList.add("open");
+  document.querySelectorAll(".ccard.open,.ccard.hl").forEach(e=>e.classList.remove("open","hl"));
+  const card=document.getElementById("card-"+id);
+  if(card){card.classList.add("open");card.classList.add("hl");setTimeout(()=>card.classList.remove("hl"),1200);card.scrollIntoView({behavior:"smooth",block:"center"});}
+  flashBoxes(CAST2DIAG[id]);
+}
+document.getElementById("castToggle").onclick=()=>document.getElementById("cast").classList.toggle("open");
+document.getElementById("presetToggle").onclick=()=>document.getElementById("presetSec").classList.toggle("open");
+document.getElementById("diagram").addEventListener("click",e=>{
+  const t=e.target.closest("[data-cast]");if(t)openCard(t.getAttribute("data-cast"));
+});
+
 document.getElementById("runBtn").onclick=runRequest;
-buildPresets();buildControls();render();
+buildCast();buildPresets();buildControls();render();
 </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 ---
 name: aws-permission-evaluator
-description: Explain whether an AWS action on a resource is allowed or denied, and why. Works for any AWS resource that supports a resource-based policy — S3 buckets, DynamoDB tables, Lambda functions, SQS queues, SNS topics, Secrets Manager secrets, KMS keys, ECR repos, API Gateway, EventBridge, and more. Use when an engineer asks "why can't role X access/invoke/delete Y", "will this principal be allowed to do Z", "explain this AWS access denial / AccessDenied", or any question about reasoning through IAM identity policies, permission boundaries, resource-based policies, SCPs, RCPs, or KMS key policies. Works from a prose description of the scenario — no AWS credentials needed.
+description: Explain whether an AWS action on a resource is allowed or denied, and why — or diagnose an observed AccessDenied when the engineer can only see some of the policies. Works for any AWS resource that supports a resource-based policy — S3 buckets, DynamoDB tables, Lambda functions, SQS queues, SNS topics, Secrets Manager secrets, KMS keys, ECR repos, API Gateway, EventBridge, and more. Use when an engineer asks "why can't role X access/invoke/delete Y", "will this principal be allowed to do Z", "explain this AWS access denial / AccessDenied", pastes an AccessDenied error message, or says they can't see the SCP / RCP / permission boundary and need to figure out which policy is blocking them. Works from a prose description of the scenario — no AWS credentials needed.
 ---
 
 # AWS Permission Evaluator
@@ -8,6 +8,16 @@ description: Explain whether an AWS action on a resource is allowed or denied, a
 This skill walks the AWS authorization decision procedure from a prose description of a
 scenario and returns a clear verdict (Allowed / Denied), the **deciding rule**, and a fix.
 It does not call AWS — it reasons about the policies the engineer describes or pastes in.
+
+It has two modes:
+
+- **Evaluate (forward):** all gate states described → verdict. The flow below.
+- **Diagnose (reverse):** the engineer *observed* an AccessDenied and can only see some of
+  the gates — typically their IAM identity policy and the resource policy, but **not** the
+  SCP, RCP, or permission boundary. Use `reference/triage.md`: decode the error message
+  (it names the denying policy type, and since Jan 2026 often the policy ARN), verify the
+  visible gates, then run discriminating experiments to corner the hidden gate. Enter this
+  mode whenever the engineer pastes an error message or says they can't see a policy.
 
 It applies to **any AWS resource with a resource-based policy** — S3, DynamoDB, Lambda, SQS,
 SNS, Secrets Manager, KMS, ECR, API Gateway, EventBridge, OpenSearch, Glue, etc. The decision
@@ -95,6 +105,32 @@ Fix: <concrete change, e.g. "add s3:PutObject to the bucket policy for role X">
 When inputs are incomplete, set the verdict to "Cannot determine" and list exactly what you
 need, rather than assuming the silent policies are permissive or restrictive.
 
+## Diagnose-mode output format
+
+When working backward from an observed denial with hidden gates, return a **ranked
+differential**, not a single verdict:
+
+```
+Observed:   AccessDenied on <action> / <resource>
+Error says: <policy type + ARN if the message names one, else "no policy type named">
+
+Visible gates checked:
+  IAM identity allows ......... pass | FAIL (why)
+  Resource policy allows ...... pass | FAIL | not-required (same-acct)
+  Conditions met .............. pass | SUSPECT (<which condition>)
+  Boundary attached? .......... yes (<arn>) | no (ruled out) | unknown
+
+Suspects (ranked):
+  1. <gate> — <why suspected>
+     Test: <one discriminating experiment from triage.md, cheapest first>
+  2. ...
+
+Escalation: <if the top suspect is org-controlled, the precise ask per triage.md step 3>
+```
+
+Always extract everything the error message offers before proposing experiments — if it
+names a policy type, the differential usually collapses to one suspect.
+
 ## Reference files
 
 - `reference/services.md` — per-service mapping: resource-policy name, action prefix,
@@ -103,5 +139,7 @@ need, rather than assuming the silent policies are permissive or restrictive.
 - `reference/decision-rules.md` — the full policy model, core decision rule, and the
   "what's required by scenario" table.
 - `reference/gotchas.md` — the commonly misunderstood corners.
+- `reference/triage.md` — Diagnose mode: error-message grammar (which policy type denied),
+  differential tests for hidden SCP/RCP/boundary, read-only CLI runbook, escalation template.
 - `reference/kms.md` — KMS CMK key-policy evaluation in depth.
 - `examples/generic-scenarios.md` — worked examples to anchor the reasoning.

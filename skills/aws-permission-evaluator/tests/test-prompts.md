@@ -59,3 +59,39 @@ bucket policy, but the account has an explicit Deny SCP on s3:DeleteObject."
 **Prompt:** "Will role `worker` be able to read from bucket `data`?"
 **Expect:** **Cannot determine.** Skill lists the missing inputs (accounts, encryption, which
 policies are known) rather than guessing.
+
+---
+
+Cases T11–T14 check **Diagnose mode** (reverse inference with hidden gates — `reference/triage.md`).
+
+### T11 — Error message names the gate
+**Prompt:** "I got: `User: arn:aws:iam::1111:role/etl is not authorized to perform:
+s3:PutObject with an explicit deny in a service control policy:
+arn:aws:organizations::9999:policy/o-abc/service_control_policy/p-xyz`. My IAM policy and
+the bucket policy both allow it. What's wrong?"
+**Expect:** Diagnose mode; identifies the **SCP** as the deciding gate from the message
+(no experiments needed), notes it's not bypassable by either visible policy, and produces
+the escalation ask quoting the policy ARN.
+
+### T12 — No policy type named, partial visibility
+**Prompt:** "My role's IAM policy allows dynamodb:GetItem, table is same-account, no resource
+policy on it, but I get AccessDenied with no detail. I can't see our SCPs or whether I have a
+permission boundary."
+**Expect:** Diagnose mode; ranked differential (condition on visible policy → SCP → boundary
+→ session policy …), each suspect paired with a discriminating test — and points out
+`aws iam get-role` reveals *whether* a boundary is attached, and
+`simulate-principal-policy` folds in SCP/boundary effects without read access.
+
+### T13 — Implicit vs explicit grammar
+**Prompt:** "Error says `because no permissions boundary allows the s3:PutObject action`.
+Same account. The bucket policy explicitly grants my role s3:PutObject. Should this work?"
+**Expect:** Recognizes **implicit** boundary deny from the `because no ... allows` grammar →
+same-account resource-policy grant bypasses it → this *should* be Allowed; if still denied,
+a second gate is in play (the message names only one type). Cross-references gotchas.md §1.
+
+### T14 — Encoded message
+**Prompt:** "ec2:RunInstances failed with an encoded authorization failure message. How do I
+find out which policy blocked it?"
+**Expect:** Points to `aws sts decode-authorization-message` (and the
+`sts:DecodeAuthorizationMessage` permission it requires); decoded output names the failing
+policy type.
